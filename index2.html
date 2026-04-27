@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annuaire & Trousseau - Occitanie Business School</title>
+    <link rel="icon" type="image/jpeg" href="images.jpeg">
+    <style>
+        /* Custom scrollbar for better look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Smooth transitions */
+        .copy-btn { transition: all 0.2s ease; }
+        .copy-btn:active { transform: scale(0.9); }
+        
+        /* Modal Animation */
+        .modal-enter { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Blob Animation for Background */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+
+        /* Effet Glassmorphism pour les cartes de l'annuaire */
+        #appContent article, #appContent a.group {
+            background-color: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(12px);
+            border-color: rgba(255, 255, 255, 0.6) !important;
+        }
+        #appContent header {
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(12px);
+        }
+
+        /* --- MODE SOMBRE - Surcharges CSS intelligentes --- */
+        html.dark { background-color: #0f172a; }
+        html.dark body { color: #f8fafc; }
+        
+        /* Composants principaux */
+        html.dark #globalLoginScreen > div,
+        html.dark #loginModal > div,
+        html.dark #appContent article, 
+        html.dark #appContent a.group {
+            background-color: rgba(30, 41, 59, 0.7) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+        html.dark #appContent header {
+            background-color: rgba(15, 23, 42, 0.8) !important;
+            border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        /* Arrière-plans & Bordures standards */
+        html.dark .bg-slate-50 { background-color: #0f172a !important; }
+        html.dark .bg-slate-100 { background-color: #1e293b !important; border-color: #334155 !important; color: #f8fafc !important; }
+        html.dark .bg-slate-100\/80 { background-color: rgba(30, 41, 59, 0.9) !important; border-bottom-color: #334155 !important;}
+        html.dark .border-slate-100, html.dark .border-slate-200, html.dark .border-slate-300 { border-color: #334155 !important; }
+        html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #334155 !important; }
+        
+        /* Textes */
+        html.dark .text-slate-900, html.dark .text-slate-800 { color: #f8fafc !important; }
+        html.dark .text-slate-700 { color: #e2e8f0 !important; }
+        html.dark .text-slate-600, html.dark .text-slate-500 { color: #94a3b8 !important; }
+        
+        /* Inputs & Boutons de copie */
+        html.dark input { background-color: #1e293b !important; color: white !important; border-color: #475569 !important; }
+        html.dark input:focus { border-color: #3b82f6 !important; }
+        html.dark .copy-btn { color: #94a3b8 !important; }
+        html.dark .copy-btn:hover { color: #60a5fa !important; }
+
+        /* Couleurs spécifiques (Badges, Liens Wifi/Support) */
+        html.dark .bg-blue-50 { background-color: rgba(30, 58, 138, 0.3) !important; border-color: rgba(30, 58, 138, 0.5) !important; }
+        html.dark .text-blue-900 { color: #bfdbfe !important; }
+        html.dark .text-blue-800 { color: #93c5fd !important; }
+        html.dark .bg-emerald-50 { background-color: rgba(6, 78, 59, 0.3) !important; border-color: rgba(6, 78, 59, 0.5) !important; }
+        html.dark .text-emerald-900 { color: #a7f3d0 !important; }
+        html.dark .text-emerald-800 { color: #6ee7b7 !important; }
+        html.dark .bg-red-50, html.dark .bg-red-100 { background-color: rgba(127, 29, 29, 0.3) !important; border-color: rgba(127, 29, 29, 0.5) !important; }
+        html.dark .text-red-700, html.dark .text-red-600 { color: #fca5a5 !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen relative transition-colors duration-300">
+
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-[10%] left-[20%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div class="absolute top-[10%] right-[20%] w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-32 left-1/2 w-96 h-96 bg-sky-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+    </div>
+
+    <div id="globalLoginScreen" class="fixed inset-0 flex items-center justify-center bg-transparent z-50 overflow-hidden">
+        <div class="bg-white/80 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/50 p-8 w-full max-w-md text-center modal-enter mx-4 relative z-10 transition-colors duration-300">
+            <div class="bg-white p-4 rounded-2xl shadow-sm inline-block mb-6">
+                <img src="images.jpeg" alt="Logo OBS" class="h-20 w-auto object-contain mx-auto rounded">
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Bienvenue sur l'Annuaire OBS</h2>
+            <p class="text-sm text-slate-500 mb-8 font-medium">Votre portail d'accès aux ressources informatiques.<br>Veuillez vous identifier pour continuer.</p>
+            
+            <div class="relative mb-4 text-left group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <input type="password" id="globalPassword" placeholder="Mot de passe" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl pl-11 pr-10 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-inner">
+                <button type="button" onclick="toggleGlobalPasswordVisibility()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+                    <svg id="globalEyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                </button>
+            </div>
+            
+            <p id="globalLoginError" class="hidden text-xs text-red-600 mb-6 font-medium text-left bg-red-50 p-3 rounded-lg border border-red-100">Mot de passe incorrect.</p>
+
+            <button id="submitGlobalBtn" onclick="checkGlobalPassword()" class="w-full py-3.5 text-sm font-bold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-white rounded-xl transition-all">
+                Accéder à l'annuaire
+            </button>
+        </div>
+    </div>
+
+    <div id="appContent" class="hidden transition-opacity duration-300">
+
+        <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="images.jpeg" alt="Logo OBS" class="h-12 w-auto object-contain rounded bg-white p-1">
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900">Trousseau OBS</h1>
+                        <p class="text-xs text-slate-500">Occitanie Business School - Accès & Mots de passe</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <button onclick="logoutGlobal()" class="text-xl opacity-50 hover:opacity-100 hover:text-red-500 transition-all" title="Verrouiller l'annuaire">
+                        🔒
+                    </button>
+                    <button id="darkModeToggleBtn" onclick="toggleDarkMode()" class="text-xl opacity-50 hover:opacity-100 transition-opacity" title="Activer/Désactiver le Mode Sombre">
+                        🌙
+                    </button>
+                    <button id="adminToggleBtn" onclick="toggleAdminModal()" class="text-xl grayscale opacity-30 hover:opacity-100 transition-opacity" title="Espace réservé">
+                        🛠️
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <a href="http://192.168.20.49" target="_blank" class="block group bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl p-4 transition-colors">
+                    <div class="flex items-start gap-4">
+                        <div class="bg-blue-200 text-blue-700 rounded-full mt-1 flex items-center justify-center h-12 w-12 flex-shrink-0">
+                            <span class="text-sm tracking-tighter">🧑🏼‍💻👩🏼‍💻</span>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-blue-900 flex items-center gap-2">
+                                Support Utilisateur
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                            </h2>
+                            <p class="text-sm text-blue-800 mt-1">Accéder au portail de support technique.</p>
+                            <p class="text-xs font-semibold text-red-600 mt-2 bg-red-50 inline-block px-2 py-1 rounded border border-red-100">
+                                ⚠️ Attention : Il faut être connecté sur la box administratif OBS pour y accéder.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="https://amdlt6.github.io/R-seaux-obs/" target="_blank" class="block group bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl p-4 transition-colors">
+                    <div class="flex items-start gap-4">
+                        <div class="bg-emerald-200 text-emerald-700 p-3 rounded-full mt-1 flex items-center justify-center h-12 w-12 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-emerald-900 flex items-center gap-2">
+                                Portail des Réseaux Wi-Fi
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                            </h2>
+                            <p class="text-sm text-emerald-800 mt-1">Vous cherchez des informations détaillées sur le Wi-Fi ? Cliquez ici.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+                <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-colors duration-300">
+                    <div class="bg-slate-100/80 p-4 border-b border-slate-200 flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>
+                        <h2 class="font-bold text-slate-800">Accès Portail Wi-Fi</h2>
+                    </div>
+                    <div class="p-4 space-y-6">
+                        <div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="text-sm">Étudiant / Formateurs</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-mono bg-slate-100 px-2 py-1 rounded text-sm border border-transparent dark:border-slate-700">obs26</span>
+                                        <button onclick="copyToClipboard('obs26')" class="copy-btn text-slate-400 hover:text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="text-sm">Administratif</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-mono bg-slate-100 px-2 py-1 rounded text-sm border border-transparent dark:border-slate-700">éducbs</span>
+                                        <button onclick="copyToClipboard('éducbs')" class="copy-btn text-slate-400 hover:text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center pb-1">
+                                    <span class="text-sm">Locataire</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-mono bg-slate-100 px-2 py-1 rounded text-sm border border-transparent dark:border-slate-700">locbs26</span>
+                                        <button onclick="copyToClipboard('locbs26')" class="copy-btn text-slate-400 hover:text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div id="adminSection" class="hidden mt-12 transition-opacity duration-300">
+                
+                <div class="flex items-center gap-4 mb-6 border-b border-slate-300 pb-4">
+                    <h2 class="text-2xl font-extrabold text-slate-800">Espace Administrateur</h2>
+                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider border border-red-200">Privé</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+                    
+                    <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-100/80 p-4 border-b border-slate-200 flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>
+                            <h2 class="font-bold text-slate-800">Réseaux Wi-Fi (SSID)</h2>
+                        </div>
+                        <div class="p-4">
+                            <div class="space-y-4">
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                    <div class="text-xs font-semibold text-slate-500 mb-1">SSID : Box-ADMINISTRATIF-OBS</div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="protected-data font-mono font-bold text-sm" data-cipher="U2FsdGVkX18TT+HIZCuR7WdMyKUfXR4TDke7t/ew7Oo=">********</span>
+                                        <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX18TT+HIZCuR7WdMyKUfXR4TDke7t/ew7Oo=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                    <div class="text-xs font-semibold text-slate-500 mb-1">SSID : Box-Étudiant-OBS</div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="protected-data font-mono font-bold text-sm" data-cipher="U2FsdGVkX18pbWEfUCuOk2OaZ22yACwx/Jof8WYzm08=">********</span>
+                                        <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX18pbWEfUCuOk2OaZ22yACwx/Jof8WYzm08=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                    <div class="text-xs font-semibold text-slate-500 mb-1">SSID : Box-loca-bs</div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="protected-data font-mono font-bold text-sm" data-cipher="U2FsdGVkX18Q9QyuiXKDAD+D8UQ2PJGiEhraIsjlfzU=">********</span>
+                                        <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX18Q9QyuiXKDAD+D8UQ2PJGiEhraIsjlfzU=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-100/80 p-4 border-b border-slate-200 flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                            <h2 class="font-bold text-slate-800">Active Directory</h2>
+                        </div>
+                        <div class="divide-y divide-slate-100">
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                     ⚠️ Administrateur Domaine
+                                </h3>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm">ID: <span class="font-mono bg-slate-100 px-1 rounded border border-transparent dark:border-slate-700">Administrator</span></span>
+                                    <button onclick="copyToClipboard('Administrator')" class="copy-btn text-slate-400 hover:text-blue-600 p-1" title="Copier l'ID"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                                <div class="flex justify-between items-center bg-red-50 p-2 rounded border border-red-100 dark:bg-red-900/20 dark:border-red-800/50">
+                                    <span class="protected-data text-sm font-mono text-red-800 dark:text-red-300 font-bold" data-cipher="U2FsdGVkX19eDbVp5hKfyKND1vw9xsmp3Pbj2xtpnxk=">********</span>
+                                    <button class="protected-btn copy-btn text-red-400 hover:text-red-600 dark:hover:text-red-200 p-1" data-cipher="U2FsdGVkX19eDbVp5hKfyKND1vw9xsmp3Pbj2xtpnxk=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                            </div>
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Stage</h3>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm">ID: <span class="font-mono bg-slate-100 px-1 rounded border border-transparent dark:border-slate-700">stage1</span>, <span class="font-mono bg-slate-100 px-1 rounded border border-transparent dark:border-slate-700">stage2</span></span>
+                                </div>
+                                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                                    <span class="protected-data text-sm font-mono text-slate-700" data-cipher="U2FsdGVkX19DK2FicRiuIJ4r4dWmPqbtaHGAD7a4eLk=">********</span>
+                                    <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600 p-1" data-cipher="U2FsdGVkX19DK2FicRiuIJ4r4dWmPqbtaHGAD7a4eLk=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                            </div>
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Examen</h3>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm">ID: <span class="font-mono bg-slate-100 px-1 rounded border border-transparent dark:border-slate-700">exam1</span>, <span class="font-mono bg-slate-100 px-1 rounded border border-transparent dark:border-slate-700">exam2</span>, <span class="font-mono bg-slate-100 px-1 rounded border border-transparent dark:border-slate-700">exam3</span></span>
+                                </div>
+                                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                                    <span class="protected-data text-sm font-mono text-slate-700" data-cipher="U2FsdGVkX19DK2FicRiuIJ4r4dWmPqbtaHGAD7a4eLk=">********</span>
+                                    <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600 p-1" data-cipher="U2FsdGVkX19DK2FicRiuIJ4r4dWmPqbtaHGAD7a4eLk=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                            </div>
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Comptes Nominatifs</h3>
+                                <p class="text-xs text-slate-500 mb-3">Format ID : 1ère lettre du prénom.Nom (ex: j.roger)</p>
+                                
+                                <div class="mb-3">
+                                    <span class="text-xs font-semibold">User (Standard)</span>
+                                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100 mt-1">
+                                        <span class="protected-data text-sm font-mono text-slate-700" data-cipher="U2FsdGVkX1/1ET+A2HMJejKIBaukyDT3XAtV0ji/fAs=">********</span>
+                                        <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600 p-1" data-cipher="U2FsdGVkX1/1ET+A2HMJejKIBaukyDT3XAtV0ji/fAs=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-semibold">Admin</span>
+                                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100 mt-1">
+                                        <span class="protected-data text-sm font-mono text-slate-700" data-cipher="U2FsdGVkX1+sC5R2nfv9kUWOkGtsu4QZQUZy46HOcAM=">********</span>
+                                        <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600 p-1" data-cipher="RU2FsdGVkX1+sC5R2nfv9kUWOkGtsu4QZQUZy46HOcAM=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-100/80 p-4 border-b border-slate-200 flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                            <h2 class="font-bold text-slate-800">Messagerie & Cloud</h2>
+                        </div>
+                        <div class="divide-y divide-slate-100">
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Microsoft</h3>
+                                <ul class="text-sm mb-2 space-y-1">
+                                    <li class="font-mono bg-slate-100 px-2 py-1 rounded inline-block border border-transparent dark:border-slate-700">eleve.obs25@hotmail.com</li><br>
+                                    <li class="font-mono bg-slate-100 px-2 py-1 rounded inline-block border border-transparent dark:border-slate-700">eleve.obs26@hotmail.com</li>
+                                </ul>
+                                <div class="bg-orange-50 border border-orange-100 p-2 rounded mt-2 text-xs text-orange-800">
+                                    <strong>MDP :</strong> Envoyer un code à <a href="mailto:contact@occitanie-business-school" class="underline">contact@occitanie-business-school</a>
+                                </div>
+                            </div>
+
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Google Workspace</h3>
+                                <div class="mb-4">
+                                    <span class="text-xs font-semibold block mb-1">Stage</span>
+                                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                                        <span class="text-xs font-mono text-slate-700 truncate mr-2">Stage.occitanie.bs@gmail.com</span>
+                                        <button onclick="copyToClipboard('Stage.occitanie.bs@gmail.com')" class="copy-btn text-slate-400 hover:text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-100 p-2 rounded border border-slate-200 mt-1">
+                                        <span class="protected-data text-sm font-mono font-bold text-slate-800" data-cipher="U2FsdGVkX18Oi5+g4LRwJwzInCAydRUOJcW+VJjIm8M=">********</span>
+                                        <button class="protected-btn copy-btn text-slate-500 hover:text-blue-600" data-cipher="U2FsdGVkX18Oi5+g4LRwJwzInCAydRUOJcW+VJjIm8M=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <span class="text-xs font-semibold block mb-1">Admin</span>
+                                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                                        <span class="text-xs font-mono text-slate-700 truncate mr-2">Admin.occitanie.bs@gmail.com</span>
+                                        <button onclick="copyToClipboard('Admin.occitanie.bs@gmail.com')" class="copy-btn text-slate-400 hover:text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-100 p-2 rounded border border-slate-200 mt-1">
+                                        <span class="protected-data text-sm font-mono font-bold text-slate-800" data-cipher="U2FsdGVkX18dGWeAFWXECzVf/kkeLoEHmgT4UVT9yQN9vC1yJtsybO5N805oGmtr">********</span>
+                                        <button class="protected-btn copy-btn text-slate-500 hover:text-blue-600" data-cipher="U2FsdGVkX18dGWeAFWXECzVf/kkeLoEHmgT4UVT9yQN9vC1yJtsybO5N805oGmtr" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <span class="text-xs font-semibold block mb-1">Location</span>
+                                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                                        <span class="text-xs font-mono text-slate-700 truncate mr-2">location.obs@gmail.com</span>
+                                        <button onclick="copyToClipboard('location.obs@gmail.com')" class="copy-btn text-slate-400 hover:text-blue-600" title="Copier l'ID"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-slate-100 p-2 rounded border border-slate-200 mt-1">
+                                        <span class="protected-data text-sm font-mono font-bold text-slate-800" data-cipher="U2FsdGVkX1/gvIeaOERDRUy1rX4z00KzWGqFgsPLpOaN0fAovDJKd7x0fj5fZrRH">********</span>
+                                        <button class="protected-btn copy-btn text-slate-500 hover:text-blue-600" data-cipher="U2FsdGVkX1/gvIeaOERDRUy1rX4z00KzWGqFgsPLpOaN0fAovDJKd7x0fj5fZrRH" onclick="copyToClipboard('Verrouillé')" title="Copier le mot de passe"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-100/80 p-4 border-b border-slate-200 flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg>
+                            <h2 class="font-bold text-slate-800">Infrastructure</h2>
+                        </div>
+                        <div class="divide-y divide-slate-100">
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Omada TP-Link</h3>
+                                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                                    <span class="text-xs font-mono text-slate-700 truncate mr-2">Admin.occitanie.bs@gmail.com</span>
+                                    <button onclick="copyToClipboard('Admin.occitanie.bs@gmail.com')" class="copy-btn text-slate-400 hover:text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                                <div class="flex justify-between items-center bg-slate-100 p-2 rounded border border-slate-200 mt-1">
+                                    <span class="protected-data text-sm font-mono font-bold text-slate-800" data-cipher="U2FsdGVkX18sdUlJk7J95JCglAJQ/Y34xrPqJWbPj5ZfstUAxyw0cAQE79nU6vog">********</span>
+                                    <button class="protected-btn copy-btn text-slate-500 hover:text-blue-600" data-cipher="U2FsdGVkX18sdUlJk7J95JCglAJQ/Y34xrPqJWbPj5ZfstUAxyw0cAQE79nU6vog" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                            </div>
+
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Box FREE</h3>
+                                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                                    <span class="text-xs">ID: <span class="font-mono text-slate-700">fbx36706098</span></span>
+                                    <button onclick="copyToClipboard('fbx36706098')" class="copy-btn text-slate-400 hover:text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                                <div class="flex justify-between items-center bg-slate-100 p-2 rounded border border-slate-200 mt-1">
+                                    <span class="protected-data text-sm font-mono font-bold text-slate-800" data-cipher="U2FsdGVkX19U06kWIzOcBLdyzyWIEjnS2TSn6WGtcuI=">********</span>
+                                    <button class="protected-btn copy-btn text-slate-500 hover:text-blue-600" data-cipher="U2FsdGVkX19U06kWIzOcBLdyzyWIEjnS2TSn6WGtcuI=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-100/80 p-4 border-b border-slate-200 flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                            <h2 class="font-bold text-slate-800">Ordinateurs Collègues</h2>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-slate-200 rounded-full h-8 w-8 flex items-center justify-center text-slate-600 font-bold text-sm">A</div>
+                                    <span class="font-medium">Amath</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="protected-data font-mono bg-slate-100 px-2 py-1 rounded text-sm text-slate-700 border border-transparent dark:border-slate-700" data-cipher="U2FsdGVkX19AwKrK5GhDa2CBAONea6eUA4WbRQUQnVA=">********</span>
+                                    <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX19AwKrK5GhDa2CBAONea6eUA4WbRQUQnVA=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-slate-200 rounded-full h-8 w-8 flex items-center justify-center text-slate-600 font-bold text-sm">L</div>
+                                    <span class="font-medium">Lorenzo</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="protected-data font-mono bg-slate-100 px-2 py-1 rounded text-sm text-slate-700 border border-transparent dark:border-slate-700" data-cipher="U2FsdGVkX18jK6X4L3YOcPJ07bDQhUlguaErt3ol2LU=">********</span>
+                                    <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX18jK6X4L3YOcPJ07bDQhUlguaErt3ol2LU=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden md:col-span-2 xl:col-span-2">
+                        <div class="bg-slate-100/80 p-4 border-b border-slate-200 flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                            <h2 class="font-bold text-slate-800">GLPI & Collaborateurs</h2>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-0 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+                            <div class="p-4 hover:bg-slate-50/50 transition-colors">
+                                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4 border-b border-slate-200/50 pb-2">Accès GLPI</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center border-b border-slate-100/60 pb-2">
+                                        <span class="text-sm font-medium text-slate-700">admin</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono bg-slate-100 px-2 py-1 rounded text-sm text-slate-700 shadow-sm border border-transparent" data-cipher="U2FsdGVkX1++jpRvsxPf3H2vfw8jimA1JOyEh+SGQ3E=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX1++jpRvsxPf3H2vfw8jimA1JOyEh+SGQ3E=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center border-b border-slate-100/60 pb-2">
+                                        <span class="text-sm font-medium text-slate-700">Post-only</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono bg-slate-100 px-2 py-1 rounded text-sm text-slate-700 shadow-sm border border-transparent" data-cipher="U2FsdGVkX1888PE+TtmVO+LmAMaZyuJy5o6qpgc/NGM=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX1888PE+TtmVO+LmAMaZyuJy5o6qpgc/NGM=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center border-b border-slate-100/60 pb-2">
+                                        <span class="text-sm font-medium text-slate-700">tech</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono bg-slate-100 px-2 py-1 rounded text-sm text-slate-700 shadow-sm border border-transparent" data-cipher="U2FsdGVkX18vaeqp5yS3ogAOGwCSv0UHwSDkoyup6Qc=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX18vaeqp5yS3ogAOGwCSv0UHwSDkoyup6Qc=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium text-slate-700">Normal</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono bg-slate-100 px-2 py-1 rounded text-sm text-slate-700 shadow-sm border border-transparent" data-cipher="U2FsdGVkX19aB91M5ZYC8GClnRQLC3xrHUSdXMEcqbU=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX19aB91M5ZYC8GClnRQLC3xrHUSdXMEcqbU=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 hover:bg-slate-50/50 transition-colors">
+                                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4 border-b border-slate-200/50 pb-2">Comptes Serveur</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-xs text-slate-700 font-medium">k.soulie</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono text-xs text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-transparent" data-cipher="U2FsdGVkX1+u9XSa8/pBFatjcQ5Dwt/knlMDVhzL92I=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX1+u9XSa8/pBFatjcQ5Dwt/knlMDVhzL92I=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-xs text-slate-700 font-medium">a.badji</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono text-xs text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-transparent" data-cipher="U2FsdGVkX18We6aSfip1Ddw67fwcSn2Rvor9hz+mMOg=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="RU2FsdGVkX18We6aSfip1Ddw67fwcSn2Rvor9hz+mMOg=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-xs text-slate-700 font-medium">m.dejoie</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono text-xs text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-transparent" data-cipher="U2FsdGVkX1/+8vLfemvNggTzwxQbVDMVQCxw1bS2/rU=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX1/+8vLfemvNggTzwxQbVDMVQCxw1bS2/rU=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-xs text-slate-700 font-medium">c.alonso</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono text-xs text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-transparent" data-cipher="U2FsdGVkX18111KksA/G0FdkTR1pkPZ2Vg6PuMOvKvI=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX18111KksA/G0FdkTR1pkPZ2Vg6PuMOvKvI=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-xs text-slate-700 font-medium">j.gontier</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono text-xs text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-transparent" data-cipher="U2FsdGVkX1+gq4La03i9p0dgKsAHADZVVkwuaD+5jcc=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX1+gq4La03i9p0dgKsAHADZVVkwuaD+5jcc=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-xs text-slate-700 font-medium">c.sinot</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono text-xs text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-transparent" data-cipher="U2FsdGVkX18Z03IjprvIsJnhmTfSoXJib0X1mkP72gA=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX18Z03IjprvIsJnhmTfSoXJib0X1mkP72gA=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-xs text-slate-700 font-medium">l.panis</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono text-xs text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-transparent" data-cipher="U2FsdGVkX18sgdfbc/uN6kg01hDvmR9HWzsco9YQB9E=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX18sgdfbc/uN6kg01hDvmR9HWzsco9YQB9E=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-xs text-slate-700 font-medium">c.jamme</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono text-xs text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-transparent" data-cipher="U2FsdGVkX1/4bZknlM6nwXCsOiUH49S/dY7gsrVfbTU=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX1/4bZknlM6nwXCsOiUH49S/dY7gsrVfbTU=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-xs text-slate-700 font-medium">r.fonvieille</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono text-xs text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-transparent" data-cipher="U2FsdGVkX18OlIIZkBZSTzH8gVSzlW0L4fn0gazZGzU=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="RU2FsdGVkX18OlIIZkBZSTzH8gVSzlW0L4fn0gazZGzU=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-xs text-slate-700 font-medium">l.chamberlin</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="protected-data font-mono text-xs text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-transparent" data-cipher="U2FsdGVkX1/9Zd7jJhFXyk2Oa+g6EFLV1A+C8JFwc6Y=">********</span>
+                                            <button class="protected-btn copy-btn text-slate-400 hover:text-blue-600" data-cipher="U2FsdGVkX1/9Zd7jJhFXyk2Oa+g6EFLV1A+C8JFwc6Y=" onclick="copyToClipboard('Verrouillé')"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+<article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-100/80 p-4 border-b border-slate-200 flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <h2 class="font-bold text-slate-800">Services de Streaming</h2>
+                        </div>
+                        <div class="divide-y divide-slate-100">
+                            
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Canal +</h3>
+                                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                                    <span class="text-xs font-mono text-slate-700 truncate mr-2">location.obs@gmail.com</span>
+                                    <button onclick="copyToClipboard('location.obs@gmail.com')" class="copy-btn text-slate-400 hover:text-blue-600" title="Copier l'ID"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                                <div class="flex justify-between items-center bg-slate-100 p-2 rounded border border-slate-200 mt-1">
+                                    <span class="protected-data text-sm font-mono font-bold text-slate-800" data-cipher="U2FsdGVkX1/K4gbkaAglhjlPzpFK7rS05yEoGCRP4WbKNW4GuFcY+gvCIGM0uJtz">********</span>
+                                    <button class="protected-btn copy-btn text-slate-500 hover:text-blue-600" data-cipher="U2FsdGVkX1/K4gbkaAglhjlPzpFK7rS05yEoGCRP4WbKNW4GuFcY+gvCIGM0uJtz" onclick="copyToClipboard('Verrouillé')" title="Copier le mot de passe"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                            </div>
+
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-red-600 uppercase tracking-wider mb-2">Netflix</h3>
+                                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                                    <span class="text-xs font-mono text-slate-700 truncate mr-2">contact@occitanie-business-school.fr</span>
+                                    <button onclick="copyToClipboard('bofcac-5gesje-mUskar')" class="copy-btn text-slate-400 hover:text-blue-600" title="Copier l'ID"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                                <div class="flex justify-between items-center bg-slate-100 p-2 rounded border border-slate-200 mt-1">
+                                    <span class="protected-data text-sm font-mono font-bold text-slate-800" data-cipher="U2FsdGVkX1/D9wmkT4pv1rUNYlB14weUqLHSsuLpnbOeUyMy78ikTnPxwW4SatAK">********</span>
+                                    <button class="protected-btn copy-btn text-slate-500 hover:text-blue-600" data-cipher="U2FsdGVkX1/D9wmkT4pv1rUNYlB14weUqLHSsuLpnbOeUyMy78ikTnPxwW4SatAK" onclick="copyToClipboard('Verrouillé')" title="Copier le mot de passe"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                            </div>
+
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">Disney +</h3>
+                                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                                    <span class="text-xs font-mono text-slate-700 truncate mr-2">location.obs@gmail.com</span>
+                                    <button onclick="copyToClipboard('location.obs@gmail.com')" class="copy-btn text-slate-400 hover:text-blue-600" title="Copier l'ID"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                                <div class="flex justify-between items-center bg-slate-100 p-2 rounded border border-slate-200 mt-1">
+                                    <span class="protected-data text-sm font-mono font-bold text-slate-800" data-cipher="U2FsdGVkX1+QO8Uh7IFS17ZF85txL8H7kFBehRGzKysMzhtp/p9ywBsHpBdolAxg">********</span>
+                                    <button class="protected-btn copy-btn text-slate-500 hover:text-blue-600" data-cipher="U2FsdGVkX1+QO8Uh7IFS17ZF85txL8H7kFBehRGzKysMzhtp/p9ywBsHpBdolAxg" onclick="copyToClipboard('Verrouillé')" title="Copier le mot de passe"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                            </div>
+
+                            <div class="p-4 hover:bg-slate-50 transition-colors">
+                                <h3 class="text-sm font-semibold text-sky-500 uppercase tracking-wider mb-2">Prime Vidéo</h3>
+                                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                                    <span class="text-xs font-mono text-slate-700 truncate mr-2">location.obs@gmail.com</span>
+                                    <button onclick="copyToClipboard('location.obs@gmail.com')" class="copy-btn text-slate-400 hover:text-blue-600" title="Copier l'ID"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                                <div class="flex justify-between items-center bg-slate-100 p-2 rounded border border-slate-200 mt-1">
+                                    <span class="protected-data text-sm font-mono font-bold text-slate-800" data-cipher="U2FsdGVkX19ktuNcW9WnZXPgI07vSEtgTNu2sYM+X7xOK5Db/t2KkCqk9jw+7mZA">********</span>
+                                    <button class="protected-btn copy-btn text-slate-500 hover:text-blue-600" data-cipher="U2FsdGVkX19ktuNcW9WnZXPgI07vSEtgTNu2sYM+X7xOK5Db/t2KkCqk9jw+7mZA" onclick="copyToClipboard('Verrouillé')" title="Copier le mot de passe"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </article>
+                    
+                </div>
+            </div>
+
+        </main>
+        
+    </div>
+
+    <div id="loginModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm modal-enter mx-4">
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Accès Administrateur</h3>
+            <p class="text-sm text-slate-500 mb-4">Veuillez entrer le mot de passe pour déverrouiller l'espace privé.</p>
+            
+            <div class="relative mb-4">
+                <input type="password" id="adminPassword" placeholder="Mot de passe admin" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10">
+                <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+                    <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                </button>
+            </div>
+            
+            <p id="loginError" class="hidden text-xs text-red-500 mb-4 font-medium">Mot de passe incorrect.</p>
+
+            <div class="flex justify-end gap-2">
+                <button onclick="closeAdminModal()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Annuler</button>
+                <button id="submitAdminBtn" onclick="checkAdminPassword()" class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Valider</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 transform translate-y-full opacity-0 transition-all duration-300 z-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+        <span>Copié dans le presse-papier !</span>
+    </div>
+
+    <script>
+        function initTheme() {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        initTheme();
+
+        function updateDarkModeIcon() {
+            const btn = document.getElementById('darkModeToggleBtn');
+            if(btn) btn.innerText = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.theme = 'light';
+                showToastMsg("Mode clair activé.");
+            } else {
+                html.classList.add('dark');
+                localStorage.theme = 'dark';
+                showToastMsg("Mode sombre activé.");
+            }
+            updateDarkModeIcon();
+        }
+
+        let toastTimeout;
+        
+        // --- SÉCURITÉ CRYPTOGRAPHIQUE ---
+        // ⚠️ REMPLACE LE TEXTE CI-DESSOUS PAR LE CHARABIA DU MOT "OBS-OK" CHIFFRÉ AVEC TON MDP ADMIN
+        const VERIFICATION_CIPHER = "U2FsdGVkX18pSJ5NxKeuiYbWXpXc/IySqlsnOee7Xp8="; 
+        
+        const GLOBAL_SECRET = "OBS";
+        
+        let isAdminLoggedIn = false;
+        let isGlobalLoggedIn = false;
+        let currentAdminKey = "";
+        
+        function setPersistentData(key, value) {
+            try { localStorage.setItem(key, value); } catch(e) {}
+            const date = new Date();
+            date.setTime(date.getTime() + (5 * 60 * 1000));
+            document.cookie = `${key}=${value};expires=${date.toUTCString()};path=/`;
+        }
+
+        function getPersistentData(key) {
+            try { 
+                const ls = localStorage.getItem(key); 
+                if (ls) return ls;
+            } catch(e) {}
+            const match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+            if (match) return match[2];
+            return null;
+        }
+
+        function removePersistentData(key) {
+            try { localStorage.removeItem(key); } catch(e) {}
+            document.cookie = `${key}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+        }
+
+        // --- GESTION DES DONNÉES CHIFFRÉES ---
+        function lockData() {
+            document.querySelectorAll('.protected-data').forEach(el => el.innerText = "********");
+            document.querySelectorAll('.protected-btn').forEach(el => el.setAttribute('onclick', `copyToClipboard('Accès verrouillé')`));
+            currentAdminKey = "";
+        }
+
+        function unlockData(key) {
+            document.querySelectorAll('.protected-data').forEach(el => {
+                const cipher = el.getAttribute('data-cipher');
+                if(cipher && cipher !== "REMPLIR_AVEC_CRYPTEUR") {
+                    try {
+                        const decrypted = CryptoJS.AES.decrypt(cipher, key).toString(CryptoJS.enc.Utf8);
+                        if(decrypted) el.innerText = decrypted;
+                    } catch(e) {}
+                }
+            });
+            document.querySelectorAll('.protected-btn').forEach(el => {
+                const cipher = el.getAttribute('data-cipher');
+                if(cipher && cipher !== "REMPLIR_AVEC_CRYPTEUR") {
+                    try {
+                        const decrypted = CryptoJS.AES.decrypt(cipher, key).toString(CryptoJS.enc.Utf8);
+                        if(decrypted) el.setAttribute('onclick', `copyToClipboard('${decrypted}')`);
+                    } catch(e) {}
+                }
+            });
+        }
+
+        let failedAttempts = 0;
+        let lockoutUntil = 0;
+        let globalFailedAttempts = 0;
+        let globalLockoutUntil = 0;
+
+        function initApp() {
+            globalFailedAttempts = parseInt(getPersistentData('obsGlobalFailedAttempts')) || 0;
+            globalLockoutUntil = parseInt(getPersistentData('obsGlobalLockoutUntil')) || 0;
+            failedAttempts = parseInt(getPersistentData('obsAdminFailedAttempts')) || 0;
+            lockoutUntil = parseInt(getPersistentData('obsAdminLockoutUntil')) || 0;
+
+            const isAuth = getPersistentData('obsGlobalAuth') === 'true';
+            const expireTimestamp = parseInt(localStorage.getItem('obsGlobalAuthExpire')) || 0;
+            
+            if (isAuth && Date.now() < expireTimestamp) {
+                isGlobalLoggedIn = true;
+                document.getElementById('globalLoginScreen').classList.add('hidden');
+                document.getElementById('appContent').classList.remove('hidden');
+            } else {
+                if (isAuth) {
+                    removePersistentData('obsGlobalAuth');
+                    localStorage.removeItem('obsGlobalAuthExpire');
+                    showToastMsg("Session expirée. Veuillez vous reconnecter.");
+                }
+                updateGlobalLockoutUI();
+            }
+            lockData();
+        }
+
+        function updateGlobalLockoutUI() {
+            const input = document.getElementById('globalPassword');
+            const btn = document.getElementById('submitGlobalBtn');
+            const errorMsg = document.getElementById('globalLoginError');
+            if(!input) return;
+
+            if (Date.now() < globalLockoutUntil) {
+                const remainingMins = Math.ceil((globalLockoutUntil - Date.now()) / 60000);
+                input.disabled = true;
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                input.classList.add('bg-slate-100', 'cursor-not-allowed');
+                errorMsg.innerText = `Trop de tentatives. Veuillez patienter ${remainingMins} minute(s).`;
+                errorMsg.classList.remove('hidden');
+            } else {
+                if (globalFailedAttempts >= 3) {
+                    globalFailedAttempts = 0;
+                    removePersistentData('obsGlobalFailedAttempts');
+                    removePersistentData('obsGlobalLockoutUntil');
+                }
+                input.disabled = false;
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                input.classList.remove('bg-slate-100', 'cursor-not-allowed');
+                errorMsg.classList.add('hidden');
+            }
+        }
+
+        function toggleGlobalPasswordVisibility() {
+            const input = document.getElementById('globalPassword');
+            const icon = document.getElementById('globalEyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />';
+            } else {
+                input.type = 'password';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+            }
+        }
+
+        function checkGlobalPassword() {
+            globalLockoutUntil = parseInt(getPersistentData('obsGlobalLockoutUntil')) || 0;
+            if (Date.now() < globalLockoutUntil) return;
+
+            const input = document.getElementById('globalPassword');
+            const btn = document.getElementById('submitGlobalBtn');
+            const errorMsg = document.getElementById('globalLoginError');
+
+            if (input.value === GLOBAL_SECRET) {
+                isGlobalLoggedIn = true;
+                
+                setPersistentData('obsGlobalAuth', 'true'); 
+                const expireDate = new Date();
+                expireDate.setMonth(expireDate.getMonth() + 1);
+                localStorage.setItem('obsGlobalAuthExpire', expireDate.getTime());
+
+                globalFailedAttempts = 0; 
+                globalLockoutUntil = 0;
+                removePersistentData('obsGlobalFailedAttempts');
+                removePersistentData('obsGlobalLockoutUntil');
+                
+                document.getElementById('globalLoginScreen').classList.add('hidden');
+                document.getElementById('appContent').classList.remove('hidden');
+            } else {
+                globalFailedAttempts++;
+                setPersistentData('obsGlobalFailedAttempts', globalFailedAttempts);
+                
+                if (globalFailedAttempts >= 3) {
+                    globalLockoutUntil = Date.now() + 5 * 60 * 1000;
+                    setPersistentData('obsGlobalLockoutUntil', globalLockoutUntil);
+                    
+                    input.disabled = true;
+                    btn.disabled = true;
+                    input.classList.add('bg-slate-100', 'cursor-not-allowed');
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                    errorMsg.innerText = "Trop de tentatives (3/3). Accès bloqué pour 5 minutes.";
+                } else {
+                    errorMsg.innerText = `Mot de passe incorrect. (${3 - globalFailedAttempts} tentative(s) restante(s))`;
+                }
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        function logoutGlobal() {
+            removePersistentData('obsGlobalAuth');
+            localStorage.removeItem('obsGlobalAuthExpire');
+            isGlobalLoggedIn = false;
+            
+            document.getElementById('appContent').classList.add('hidden');
+            
+            if(isAdminLoggedIn) {
+                isAdminLoggedIn = false;
+                document.getElementById('adminSection').classList.add('hidden');
+                document.getElementById('adminToggleBtn').classList.replace('opacity-100', 'opacity-30');
+                lockData();
+            }
+            
+            const loginScreen = document.getElementById('globalLoginScreen');
+            loginScreen.classList.remove('hidden');
+            
+            document.getElementById('globalPassword').value = '';
+            
+            showToastMsg("Annuaire verrouillé.");
+        }
+
+
+        function togglePasswordVisibility() {
+            const input = document.getElementById('adminPassword');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />';
+            } else {
+                input.type = 'password';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+            }
+        }
+
+        function toggleAdminModal() {
+            if (isAdminLoggedIn) {
+                isAdminLoggedIn = false;
+                document.getElementById('adminSection').classList.add('hidden');
+                document.getElementById('adminToggleBtn').classList.replace('opacity-100', 'opacity-30');
+                lockData();
+                showToastMsg("Mode administrateur désactivé.");
+            } else {
+                const input = document.getElementById('adminPassword');
+                const btn = document.getElementById('submitAdminBtn');
+                const errorMsg = document.getElementById('loginError');
+                
+                input.value = '';
+                input.type = 'password';
+                document.getElementById('eyeIcon').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+                
+                lockoutUntil = parseInt(getPersistentData('obsAdminLockoutUntil')) || 0;
+                failedAttempts = parseInt(getPersistentData('obsAdminFailedAttempts')) || 0;
+                
+                if (Date.now() < lockoutUntil) {
+                    const remainingMins = Math.ceil((lockoutUntil - Date.now()) / 60000);
+                    input.disabled = true;
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                    input.classList.add('bg-slate-100', 'cursor-not-allowed');
+                    errorMsg.innerText = `Trop de tentatives. Veuillez patienter ${remainingMins} minute(s).`;
+                    errorMsg.classList.remove('hidden');
+                } else {
+                    if (failedAttempts >= 3) {
+                        failedAttempts = 0;
+                        removePersistentData('obsAdminFailedAttempts');
+                        removePersistentData('obsAdminLockoutUntil');
+                    }
+                    input.disabled = false;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    input.classList.remove('bg-slate-100', 'cursor-not-allowed');
+                    errorMsg.classList.add('hidden');
+                }
+
+                document.getElementById('loginModal').classList.remove('hidden');
+                if (!input.disabled) input.focus();
+            }
+        }
+
+        function closeAdminModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function checkAdminPassword() {
+            lockoutUntil = parseInt(getPersistentData('obsAdminLockoutUntil')) || 0;
+            if (Date.now() < lockoutUntil) return;
+
+            const inputPass = document.getElementById('adminPassword').value;
+            const btn = document.getElementById('submitAdminBtn');
+            const errorMsg = document.getElementById('loginError');
+
+            try {
+                // Test du déchiffrement
+                const decryptedCheck = CryptoJS.AES.decrypt(VERIFICATION_CIPHER, inputPass).toString(CryptoJS.enc.Utf8);
+                
+                if (decryptedCheck === "OBS-OK") {
+                    isAdminLoggedIn = true;
+                    currentAdminKey = inputPass;
+                    
+                    failedAttempts = 0; 
+                    lockoutUntil = 0;
+                    removePersistentData('obsAdminFailedAttempts');
+                    removePersistentData('obsAdminLockoutUntil');
+                    
+                    document.getElementById('loginModal').classList.add('hidden');
+                    document.getElementById('adminSection').classList.remove('hidden');
+                    document.getElementById('adminToggleBtn').classList.replace('opacity-30', 'opacity-100');
+                    
+                    // Déchiffre les données à l'écran
+                    unlockData(currentAdminKey);
+                    
+                    setTimeout(() => {
+                        document.getElementById('adminSection').scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+
+                    showToastMsg("Mode administrateur activé !");
+                } else {
+                    throw new Error("Wrong password");
+                }
+            } catch(e) {
+                failedAttempts++;
+                setPersistentData('obsAdminFailedAttempts', failedAttempts); 
+                
+                if (failedAttempts >= 3) {
+                    lockoutUntil = Date.now() + 5 * 60 * 1000;
+                    setPersistentData('obsAdminLockoutUntil', lockoutUntil); 
+                    
+                    const input = document.getElementById('adminPassword');
+                    input.disabled = true;
+                    btn.disabled = true;
+                    input.classList.add('bg-slate-100', 'cursor-not-allowed');
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                    errorMsg.innerText = "Trop de tentatives (3/3). Accès bloqué pour 5 minutes.";
+                } else {
+                    errorMsg.innerText = `Mot de passe incorrect. (${3 - failedAttempts} tentative(s) restante(s))`;
+                }
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            showToastMsg("Copié dans le presse-papier !");
+        }
+
+        function showToastMsg(message) {
+            const toast = document.getElementById('toast');
+            toast.querySelector('span').innerText = message;
+            
+            if(toastTimeout) clearTimeout(toastTimeout);
+            
+            toast.classList.remove('translate-y-full', 'opacity-0');
+            
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+            }, 2000);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initApp();
+            updateDarkModeIcon();
+            
+            const globalPwInput = document.getElementById('globalPassword');
+            if (globalPwInput) {
+                globalPwInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') checkGlobalPassword();
+                });
+            }
+            
+            const adminPwInput = document.getElementById('adminPassword');
+            if (adminPwInput) {
+                adminPwInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') checkAdminPassword();
+                });
+            }
+        });
+        
+    </script>
+</body>
+</html>
