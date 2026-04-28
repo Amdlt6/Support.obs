@@ -229,6 +229,42 @@
                         </div>
                     </div>
                 </article>
+                <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden md:col-span-2 transition-colors duration-300">
+                    <div class="bg-slate-100/80 p-4 border-b border-slate-200 flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <h2 class="font-bold text-slate-800">Tutoriels & Auto-Dépannage</h2>
+                    </div>
+                    <div class="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        
+                        <a href="https://www.youtube.com/watch?v=l_y4DSkAErk" target="_blank" class="group flex flex-col items-center text-center p-4 bg-slate-50 hover:bg-white border border-slate-100 hover:border-blue-200 rounded-xl transition-all duration-300 hover:shadow-md">
+                            <div class="h-10 w-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">PC Lent ?</h3>
+                            <p class="text-xs text-slate-500 mt-1">Astuces pour nettoyer et accélérer Windows.</p>
+                        </a>
+
+                        <a href="https://www.youtube.com/watch?v=dg4El-_wWig" target="_blank" class="group flex flex-col items-center text-center p-4 bg-slate-50 hover:bg-white border border-slate-100 hover:border-emerald-200 rounded-xl transition-all duration-300 hover:shadow-md">
+                            <div class="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">Problème Wi-Fi ?</h3>
+                            <p class="text-xs text-slate-500 mt-1">Réparer la connexion en moins d'1 minute.</p>
+                        </a>
+
+                        <a href="https://www.youtube.com/watch?v=aboqTRVvsuQ" target="_blank" class="group flex flex-col items-center text-center p-4 bg-slate-50 hover:bg-white border border-slate-100 hover:border-purple-200 rounded-xl transition-all duration-300 hover:shadow-md">
+                            <div class="h-10 w-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Plus de son ?</h3>
+                            <p class="text-xs text-slate-500 mt-1">Retrouver l'audio sur son ordinateur facilement.</p>
+                        </a>
+
+                    </div>
+                </article>
+                ```
+
+*(Note : J'ai ajouté la classe `md:col-span-2` à la nouvelle carte. Comme ton espace public utilise une grille de 3 colonnes maximum sur grand écran, ta carte Wi-Fi prendra la 1ère colonne, et cette nouvelle carte de tutos prendra les 2 colonnes suivantes, ce qui équilibrera parfaitement le design !)*
             </div>
 
             <div id="adminSection" class="hidden mt-12 transition-opacity duration-300">
